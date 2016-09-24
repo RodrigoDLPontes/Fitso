@@ -16,9 +16,6 @@ router.get('/', function(req, res, next) {
 
 router.get('/new', function(req, res, next) {
     // name = %s email = %s, gender = mfo
-
-    //Insert some validation here.
-
     var name = req.query.name;
     var email = req.query.email;
     var gender = req.query.gender;
@@ -37,7 +34,7 @@ router.get('/new', function(req, res, next) {
     }
     else {
     // test if the email is already in the database
-        age = parseInt(age); 
+        age = parseInt(age);
         var uid = hash(email);
         mgclient.connect(curl, function(err, db){
             if(err != null){ console.err(err)}
@@ -72,5 +69,47 @@ router.get('/new', function(req, res, next) {
 
 router.get('/groups', function(req,res, next) {
     // {g, c, s}, = {subgroups ?? }
+    //get user from the db via email
+    if("g" in req.query)
+        gymgroups = req.query.g;
+    else
+        gymgroups = [];
+    if("c" in req.query)
+        cardiogroups = req.query.c;
+    else cardiogroups = [];
+    if("s" in req.query)
+        sportgroups = req.query.s;
+    else
+        sportgroups = [];
+    var regex = /^[-a-z0-9~!$%^&*_=+}{\'?]+(\.[-a-z0-9~!$%^&*_=+}{\'?]+)*@([a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*\.(aero|arpa|biz|com|coop|edu|gov|info|int|mil|museum|name|net|org|pro|travel|mobi|[a-z][a-z])|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,5})?$/i
+
+    if(!("email" in req.query) || !(regex.test(req.query.email))){
+        console.error(req.query.email, !(regex.test(req.query.email)))
+        res.send({"err": "INVALID_EMAIL", "res": null})
+    } else {
+        var email = req.query.email;
+        mgclient.connect(curl, function(err, db){
+            col = db.collection("users")
+            col.find({"email": email}).toArray(function(err, docs){
+                assert.equal(err, null);
+                if(docs.lenth == 0){
+                    res.send({"err": "NO_USER_FOUND", "res": null});
+                    db.close();
+                } else {
+                    // we found the user.
+                    col.updateOne({"email": email}, {$set: {
+                        "g": gymgroups,
+                        "c": cardiogroups,
+                        "s": sportgroups
+                    }}, function(err, result){
+                        assert.equal(err, null)
+                        assert.equal(1, result.matchedCount)
+                        res.send({"err": null, "res": "SUCCESS"})
+                        db.close();
+                    })
+                }
+            })
+        })
+    }
 })
 module.exports = router;
