@@ -1,5 +1,6 @@
 package com.fitso.fitso;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -43,7 +44,7 @@ public class SignUpActivity extends AppCompatActivity {
 		confirmButton = (Button)findViewById(R.id.confirmButton);
 	}
 
-	public void confirmButtonClicked(View view) {
+	public void signUpConfirmButtonClicked(View view) {
 		if(!passwordEditText.getText().toString().equals(confirmPasswordEditText.getText().toString())) {
 			Toast.makeText(this, "Password and confirm password don't match!", Toast.LENGTH_LONG).show();
 			return;
@@ -71,11 +72,14 @@ public class SignUpActivity extends AppCompatActivity {
 					String str = in.readLine();
 					in.close();
 					JSONObject json = new JSONObject(str);
-					if(json.getString("err") != null) {
-
-					} else {
-						Toast.makeText(SignUpActivity.this, "Fields invalid!", Toast.LENGTH_LONG).show();
-					}
+//					if(json.getString("err") != null) {
+						Intent intent = new Intent(SignUpActivity.this, ActivitiesSelectionActivity.class);
+						intent.putExtra("Name", name);
+						intent.putExtra("Email", email);
+						startActivity(intent);
+//					} else {
+//						Toast.makeText(SignUpActivity.this, "Fields invalid!", Toast.LENGTH_LONG).show();
+//					}
 				} catch (Exception e) {}
 				return null;
 			}

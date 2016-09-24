@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <ImageView
+            android:id="@+id/fifthIcon"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginLeft="130dp"
+            android:src="@drawable/ic_testbubble"/>
+
+        <ImageView
+            android:id="@+id/fourthIcon"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginLeft="120dp"
+            android:src="@drawable/ic_testbubble"/>
+
+        <ImageView
+            android:id="@+id/thirdIcon"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginLeft="100dp"
+            android:src="@drawable/ic_testbubble"/>
+
+        <ImageView
+            android:id="@+id/secondIcon"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginLeft="60dp"
+            android:src="@drawable/ic_testbubble"/>
+
+        <ImageView
+            android:id="@+id/firstIcon"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/ic_testbubble"/>
+
+        <ImageView
+            android:id="@+id/activityIcon"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_alignParentRight="true"/>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <TextView
+            android:id="@+id/matchTitleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="(Title)"
+            android:textSize="24sp"/>
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_location_on_black_24dp"
+            android:layout_toLeftOf="@+id/matchDistanceTextView"/>
+
+        <TextView
+            android:id="@+id/matchDistanceTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:text="(Distance)"
+            android:textSize="24sp"/>
+
+    </RelativeLayout>
+
+</LinearLayout>
