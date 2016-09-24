@@ -37,18 +37,23 @@ router.get("/new", function(req, res, next){
                         lat: parseFloat(req.query.lat),
                         lon: parseFloat(req.query.lon)
                     }
-                    console.error(temp)
                     var tid = hash(JSON.stringify(temp))
-                    console.error("tid", tid)
-                    mat.insertOne({
-                        id: tid,
-                        sport: req.query.sport,
-                        people: docs,
-                        lat: parseFloat(req.query.lat),
-                        lon: parseFloat(req.query.lon)
+                    mat.findOne({id: tid}, function(err, doc){
+                        if(! (doc == undefined)){
+                            res.send({"err": "ALREADY_EXISTS", "res": null});
+                        } else {
+                            mat.insertOne({
+                                id: tid,
+                                sport: req.query.sport,
+                                people: docs,
+                                lat: parseFloat(req.query.lat),
+                                lon: parseFloat(req.query.lon)
+                            })
+                            db.close();
+                            res.send({"err": null, "res": "SUCCESS"})
+                        }
                     })
-                    db.close();
-                    res.send({"err": null, "res": "SUCCESS"})
+
                 }
             })
 
