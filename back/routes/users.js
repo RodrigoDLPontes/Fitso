@@ -57,6 +57,7 @@ router.get('/new', function(req, res, next) {
                                "gender": gender,
                                "email": email,
                                "age": age
+                               "skill": 3
                             };
                     col.insertOne(doc, function(err, r){
                         assert.equal(null, err)
