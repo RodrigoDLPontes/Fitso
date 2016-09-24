@@ -6,5 +6,5 @@
 .DS_Store
 /build
 /captures
-back/node_modules/* 
+back/node_modules 
 
