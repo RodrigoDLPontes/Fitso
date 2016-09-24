@@ -46,15 +46,34 @@ router.get("/new", function(req, res, next){
 })
 
 //the user wnats to join an existing match
-//join?matchid=%d // the %d will be provided as a string with the browse request.
+//join?matchid=%d&email=%s // the %d will be provided as a string with the browse request.
 router.get("/join", function(req, res, next){
-
+    if(!("matchid" in req.query)){
+        res.send({"err": "NO_MATCH", "res": null})
+    } else if (!("email" in req.query) || !checkEmail(req.query.email)){
+        res.send({"err": "INVALID_EMAIL", "res": null})
+    } else {
+        mgclient.connect(curl, function(err, db){
+            var matches = db.collection("matches")
+            var users = db.collection("users")
+            users.find({email: req.query.email}, {"name": 1, "skill": 1, "age": 1, "email": 1}).toArray(function(err, docs){
+                if(docs.length != 1 ){
+                    res.send({"err": "INVALID_EMAIL", "res": null})
+                    db.close()
+                } else {
+                    matches.updateOne({_id: req.query.matchid}, {$addToSet: {"people": docs}})
+                    res.send({"err": null, "res": "SUCCESS"})
+                    db.close()
+                }
+            })
+        })
+    }
 })
 
 //the user wants to see all the different matches in the area
-// browse?lat=%d&lon=%d&dist=%d with dist not implemented yet.
+// browse?email=%s&lat=%d&lon=%d&dist=%d with dist not implemented yet.
 router.get("/browse", function(req, res, next){
-
+    
 })
 
 module.exports = router;
