@@ -9,6 +9,11 @@ var subgroups = {
     'c': ["run", "swim", "bike"],
     's': ["basketball", "football", "soccer", "vollyball", "ultimate"]
 }
+
+var checkEmail = function(email){
+    var regex = /^[-a-z0-9~!$%^&*_=+}{\'?]+(\.[-a-z0-9~!$%^&*_=+}{\'?]+)*@([a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*\.(aero|arpa|biz|com|coop|edu|gov|info|int|mil|museum|name|net|org|pro|travel|mobi|[a-z][a-z])|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,5})?$/i
+    return regex.test(email)
+}
 /* GET users listing. */
 router.get('/', function(req, res, next) {
   res.send('respond with a resource');
@@ -20,12 +25,10 @@ router.get('/new', function(req, res, next) {
     var email = req.query.email;
     var gender = req.query.gender;
     var age = req.query.age;
-    var regex = /^[-a-z0-9~!$%^&*_=+}{\'?]+(\.[-a-z0-9~!$%^&*_=+}{\'?]+)*@([a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*\.(aero|arpa|biz|com|coop|edu|gov|info|int|mil|museum|name|net|org|pro|travel|mobi|[a-z][a-z])|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,5})?$/i
     var numrex = /^[1-9][0-9]?$/
     var gendex = /m|o|f/
-    console.error(regex.test(email))
     // validate email
-    if(!regex.test(email)){
+    if(!checkEmail){
         res.send({"err": "INVALID_EMAIL", "res": null});
     } else if (!numrex.test(age)) {
         res.send({"err": "INVALID_AGE", "res": null});
@@ -71,20 +74,18 @@ router.get('/groups', function(req,res, next) {
     // {g, c, s}, = {subgroups ?? }
     //get user from the db via email
     if("g" in req.query)
-        gymgroups = req.query.g;
+        gymgroups = req.query.g.split(",");
     else
         gymgroups = [];
     if("c" in req.query)
-        cardiogroups = req.query.c;
+        cardiogroups = req.query.c.split(",");
     else cardiogroups = [];
     if("s" in req.query)
-        sportgroups = req.query.s;
+        sportgroups = req.query.s.split(",");
     else
         sportgroups = [];
-    var regex = /^[-a-z0-9~!$%^&*_=+}{\'?]+(\.[-a-z0-9~!$%^&*_=+}{\'?]+)*@([a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*\.(aero|arpa|biz|com|coop|edu|gov|info|int|mil|museum|name|net|org|pro|travel|mobi|[a-z][a-z])|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,5})?$/i
 
-    if(!("email" in req.query) || !(regex.test(req.query.email))){
-        console.error(req.query.email, !(regex.test(req.query.email)))
+    if(!("email" in req.query) || !checkEmail(req.query.email)){
         res.send({"err": "INVALID_EMAIL", "res": null})
     } else {
         var email = req.query.email;
@@ -112,4 +113,39 @@ router.get('/groups', function(req,res, next) {
         })
     }
 })
+router.get("/getgroups", function(req, res, next){
+    //Make sure we have an email.
+
+    if(!("email" in req.query) || !checkEmail(req.query.email)) {
+        res.send({"err": "INVALID_EMAIL", "res": null})
+    } else {
+        mgclient.connect(curl, function(err, db){
+            col = db.collection("users")
+            col.find({"email": req.query.email}).toArray(function(err, docs){
+                assert.equal(err, null);
+                if(docs.length == 0){
+                    res.send({"err": "NO_USER_FOUND", "res": null})
+                    db.close()
+                } else {
+                    console.error(docs)
+                    console.error({
+                        "g": docs[0].g,
+                        "c": docs[0].c,
+                        "s": docs[0].s
+                    })
+                    res.send({
+                        "err": null,
+                        "res": {
+                            "g": docs[0].g,
+                            "c": docs[0].c,
+                            "s": docs[0].s
+                        }
+                    })
+                    db.close()
+                }
+            })
+        })
+    }
+})
+
 module.exports = router;
