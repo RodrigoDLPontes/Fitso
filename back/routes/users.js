@@ -56,7 +56,7 @@ router.get('/new', function(req, res, next) {
                                "name": name,
                                "gender": gender,
                                "email": email,
-                               "age": age
+                               "age": age, 
                                "skill": 3
                             };
                     col.insertOne(doc, function(err, r){

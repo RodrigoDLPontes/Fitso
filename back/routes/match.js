@@ -11,33 +11,27 @@ var checkEmail = function(email){
 
 //The user wants to create a new match, so find the top 10 profile matches within
 //A certain distance and return that in a JSON array.
-//new?lat=%d&lon=%d&dist=%d&email=%s
+//new?lat=%d&lon=%d&dist=%d&email=%s&sport=%s
 //Dist will be there but not implemented yet.
 router.get("/new", function(req, res, next){
-
-})
-
-//The user has swiped, so lets initialize a new match element.
-//create?parter=%s&email=%s&lat=%d&lon=%d&sport=%s
-router.get("/create", function(req, res, next){
-    if(!("partner" in req.query) || !checkEmail(req.query.partner)){
-        res.send({"err": "INVALID_PARTNER_EMAIL", "res": null});
-        db.close();
-    } else if (!("email" in req.query) || !checkEmail(req.query.email)){
+    if(!("email" in req.query) || !checkEmail(req.query.email)){
         res.send({"err": "INVALID_EMAIL", "res": null})
-        db.close();
+    } else if (!("sport" in req.query)) {
+        res.send({"err": "NO_SPORT", "res": null})
     } else if (!("lat" in req.query) || !("lon" in req.query)){
         res.send({"err": "NO_POSITION", "res": null })
         db.close();
     } else {
         mgclient.connect(curl, function(err, db){
-            var col = db.collection("users");
-            col.find({"email": {$in: [req.query.email, req.query.partner]}}, {"name": 1, "skill": 1, "age": 1, "email": 1} ).toArray(function(err, docs){
-                if(docs.length != 2){
-                    res.send({"err": "wrong docs", "res": docs.length})
+            var col = db.collection("users")
+            col.find({"email": req.query.email}, {"name": 1, "skill": 1, "age": 1, "email": 1}).toArray(function(err, docs){
+                assert.equal(err, null)
+                if (docs.length != 1 ){
+                    res.send({"err": "INVALID_EMAIL", "res": docs.length});
                 } else {
                     mat = db.collection("matches")
                     mat.insertOne({
+                        sport: req.query.sport,
                         people: docs,
                         lat: req.query.lat,
                         lon: req.query.lon
@@ -46,6 +40,7 @@ router.get("/create", function(req, res, next){
                     res.send({"err": null, "res": "SUCCESS"})
                 }
             })
+
         })
     }
 })
