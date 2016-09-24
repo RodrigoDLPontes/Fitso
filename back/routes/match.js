@@ -3,6 +3,7 @@ var router = express.Router();
 var url = require('url');
 var mgclient = require('mongodb').MongoClient, assert = require('assert');
 var curl = 'mongodb://localhost:27017/fitso';
+var hash = require('object-hash');
 
 var checkEmail = function(email){
     var regex = /^[-a-z0-9~!$%^&*_=+}{\'?]+(\.[-a-z0-9~!$%^&*_=+}{\'?]+)*@([a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*\.(aero|arpa|biz|com|coop|edu|gov|info|int|mil|museum|name|net|org|pro|travel|mobi|[a-z][a-z])|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,5})?$/i
@@ -30,11 +31,21 @@ router.get("/new", function(req, res, next){
                     res.send({"err": "INVALID_EMAIL", "res": docs.length});
                 } else {
                     mat = db.collection("matches")
-                    mat.insertOne({
+                    var temp = {
                         sport: req.query.sport,
                         people: docs,
-                        lat: req.query.lat,
-                        lon: req.query.lon
+                        lat: parseFloat(req.query.lat),
+                        lon: parseFloat(req.query.lon)
+                    }
+                    console.error(temp)
+                    var tid = hash(JSON.stringify(temp))
+                    console.error("tid", tid)
+                    mat.insertOne({
+                        id: tid,
+                        sport: req.query.sport,
+                        people: docs,
+                        lat: parseFloat(req.query.lat),
+                        lon: parseFloat(req.query.lon)
                     })
                     db.close();
                     res.send({"err": null, "res": "SUCCESS"})
@@ -57,13 +68,25 @@ router.get("/join", function(req, res, next){
             var matches = db.collection("matches")
             var users = db.collection("users")
             users.find({email: req.query.email}, {"name": 1, "skill": 1, "age": 1, "email": 1}).toArray(function(err, docs){
+                console.error("FOUND", docs)
                 if(docs.length != 1 ){
                     res.send({"err": "INVALID_EMAIL", "res": null})
                     db.close()
                 } else {
-                    matches.updateOne({_id: req.query.matchid}, {$addToSet: {"people": docs}})
-                    res.send({"err": null, "res": "SUCCESS"})
-                    db.close()
+                    console.error("IDMatch")
+                    matches.updateOne({id: req.query.matchid}, {$addToSet: {"people": docs}},
+                        function(err, result){
+                            try {
+                                assert.equal(err, null)
+                                assert.equal(1, result.matchedCount)
+                                res.send({"err": null, "res": "SUCCESS"})
+                            } catch (e) {
+                                res.send({"err": e, "res": null})
+                            } finally {
+                                db.close();
+                            }
+                        }
+                    )
                 }
             })
         })
@@ -73,7 +96,20 @@ router.get("/join", function(req, res, next){
 //the user wants to see all the different matches in the area
 // browse?email=%s&lat=%d&lon=%d&dist=%d with dist not implemented yet.
 router.get("/browse", function(req, res, next){
-    
+    if (!("email" in req.query) || ! checkEmail(req.query.email)){
+        res.send({err: "INVALID_EMAIL", res: null})
+    } else {
+        mgclient.connect(curl, function(err, db){
+            var matches = db.collection('matches');
+            var c = matches.find({
+                $and: [{lat: {$lt: parseFloat(req.query.lat)+1}}, {lat: {$gt: parseFloat(req.query.lat) -1 }}],
+                $and: [{lon: {$lt: parseFloat(req.query.lon)+1}}, {lon: {$gt: parseFloat(req.query.lon) -1 }}]
+            });
+            c.each(function(err, item){
+                console.error(item)
+            })
+        })
+    }
 })
 
 module.exports = router;
