@@ -22,8 +22,8 @@
                 android:id="@+id/greetingsTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="(Greetings)"
                 android:gravity="center"
+                android:text="(Greetings)"
                 android:textSize="30sp"/>
 
             <LinearLayout
@@ -42,98 +42,97 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:alpha="0.5"
-                        android:scaleType="centerCrop"
                         android:onClick="activitySelected"
+                        android:scaleType="centerCrop"
                         android:src="@drawable/bodyweight_tile"/>
 
                     <ImageView
-                        android:alpha="0.5"
                         android:id="@+id/crossfitTile"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:scaleType="centerCrop"
+                        android:alpha="0.5"
                         android:onClick="activitySelected"
+                        android:scaleType="centerCrop"
                         android:src="@drawable/crossfit_tile"/>
 
                     <ImageView
-                        android:alpha="0.5"
                         android:id="@+id/swimmingTile"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:scaleType="centerCrop"
+                        android:alpha="0.5"
                         android:onClick="activitySelected"
-                        android:src="@drawable/swim_tile"/>
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/swimming_tile"/>
 
                     <ImageView
-                        android:alpha="0.5"
                         android:id="@+id/basketballTile"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:scaleType="centerCrop"
+                        android:alpha="0.5"
                         android:onClick="activitySelected"
+                        android:scaleType="centerCrop"
                         android:src="@drawable/basketball_tile"/>
 
                     <ImageView
-                        android:alpha="0.5"
                         android:id="@+id/ultimateTile"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:scaleType="centerCrop"
+                        android:alpha="0.5"
                         android:onClick="activitySelected"
+                        android:scaleType="centerCrop"
                         android:src="@drawable/frisbee_tile"/>
 
                 </LinearLayout>
 
                 <LinearLayout
-                    android:alpha="0.5"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
                     <ImageView
-                        android:alpha="0.5"
                         android:id="@+id/weightLiftingTile"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:scaleType="centerCrop"
+                        android:alpha="0.5"
                         android:onClick="activitySelected"
+                        android:scaleType="centerCrop"
                         android:src="@drawable/weights_tile"/>
 
                     <ImageView
-                        android:alpha="0.5"
                         android:id="@+id/runningTile"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:scaleType="centerCrop"
+                        android:alpha="0.5"
                         android:onClick="activitySelected"
+                        android:scaleType="centerCrop"
                         android:src="@drawable/run_tile"/>
 
                     <ImageView
-                        android:alpha="0.5"
                         android:id="@+id/bikingTile"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:scaleType="centerCrop"
+                        android:alpha="0.5"
                         android:onClick="activitySelected"
+                        android:scaleType="centerCrop"
                         android:src="@drawable/bike_tile"/>
 
                     <ImageView
-                        android:alpha="0.5"
                         android:id="@+id/soccerTile"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:scaleType="centerCrop"
+                        android:alpha="0.5"
                         android:onClick="activitySelected"
+                        android:scaleType="centerCrop"
                         android:src="@drawable/soccer_tile"/>
 
                     <ImageView
-                        android:alpha="0.5"
                         android:id="@+id/volleyballTile"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:scaleType="centerCrop"
+                        android:alpha="0.5"
                         android:onClick="activitySelected"
+                        android:scaleType="centerCrop"
                         android:src="@drawable/volleyball_tile"/>
 
                 </LinearLayout>
@@ -145,10 +144,10 @@
     </ScrollView>
 
     <Button
-        android:onClick="activitiesSelectionConfirmButtonClicked"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Confirm"
-        android:layout_weight="10"/>
+        android:layout_weight="10"
+        android:onClick="activitiesSelectionConfirmButtonClicked"
+        android:text="Confirm"/>
 
 </LinearLayout>

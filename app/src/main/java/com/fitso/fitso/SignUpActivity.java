@@ -1,6 +1,7 @@
 package com.fitso.fitso;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -73,6 +74,7 @@ public class SignUpActivity extends AppCompatActivity {
 					in.close();
 					JSONObject json = new JSONObject(str);
 //					if(json.getString("err") != null) {
+						getSharedPreferences(Constants.sharedPreferencesFile, MODE_PRIVATE).edit().putString("Email", email);
 						Intent intent = new Intent(SignUpActivity.this, ActivitiesSelectionActivity.class);
 						intent.putExtra("Name", name);
 						intent.putExtra("Email", email);
