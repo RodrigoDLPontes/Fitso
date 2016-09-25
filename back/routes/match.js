@@ -29,6 +29,7 @@ router.get("/new", function(req, res, next){
                 assert.equal(err, null)
                 if (docs.length != 1 ){
                     res.send({"err": "INVALID_EMAIL", "res": docs.length});
+                    db.close()
                 } else {
                     mat = db.collection("matches")
                     var temp = {
@@ -134,8 +135,8 @@ router.get("/browse", function(req, res, next){
         mgclient.connect(curl, function(err, db){
             var matches = db.collection('matches');
             var col = db.collection('users');
+            var fin = [];
             col.findOne({email: req.query.email}, {"name": 1, "skill": 1, "age": 1, "email": 1}, function(err, doc){
-                console.log("FOUND: ", doc)
                 var me = doc;
                 var c = matches.find({
                     $and: [{lat: {$lt: parseFloat(req.query.lat)+1}}, {lat: {$gt: parseFloat(req.query.lat) -1 }}],
@@ -144,9 +145,7 @@ router.get("/browse", function(req, res, next){
                 }).toArray(function(err, docs){
                     for(i in docs){
                         u = docs[i]
-                        console.log(u)
                         var isIn = inRange([req.query.lat, req.query.lon], [u.lat, u.lon])
-                        console.error("RANGE: ", isIn)
                         if(isIn < 10){
                             var tscore = 0;
                             for(var i = 0; i < u.people.length; i++){
@@ -157,15 +156,14 @@ router.get("/browse", function(req, res, next){
                             fin.push(u)
                        }
                     }
-                    console.log(fin)
                     var by_dist = fin;
                     var by_match = fin;
                     by_dist.sort(function(a,b){return a.dist - b.dist})
                     by_match.sort(function(a,b){return b.comp - a.comp})
                     res.send({"err": null, "res": {dist: by_dist, match: by_match}})
+                    db.close()
                 });
             })
-            var fin = [];
         })
     }
 })
