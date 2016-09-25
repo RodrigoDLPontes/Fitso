@@ -134,38 +134,38 @@ router.get("/browse", function(req, res, next){
         mgclient.connect(curl, function(err, db){
             var matches = db.collection('matches');
             var col = db.collection('users');
-            var me ;
-            col.findOne({email: req.query.email}, function(err, docs){
-                me = docs;
+            col.findOne({email: req.query.email}, {"name": 1, "skill": 1, "age": 1, "email": 1}, function(err, doc){
+                console.log("FOUND: ", doc)
+                var me = doc;
+                var c = matches.find({
+                    $and: [{lat: {$lt: parseFloat(req.query.lat)+1}}, {lat: {$gt: parseFloat(req.query.lat) -1 }}],
+                    $and: [{lon: {$lt: parseFloat(req.query.lon)+1}}, {lon: {$gt: parseFloat(req.query.lon) -1 }}],
+                    people: {$nin: [me]}
+                }).toArray(function(err, docs){
+                    for(i in docs){
+                        u = docs[i]
+                        console.log(u)
+                        var isIn = inRange([req.query.lat, req.query.lon], [u.lat, u.lon])
+                        console.error("RANGE: ", isIn)
+                        if(isIn < 10){
+                            var tscore = 0;
+                            for(var i = 0; i < u.people.length; i++){
+                                tscore += compUser(u.people[i], me);
+                            }
+                            u.dist = isIn;
+                            u.comp = tscore;
+                            fin.push(u)
+                       }
+                    }
+                    console.log(fin)
+                    var by_dist = fin;
+                    var by_match = fin;
+                    by_dist.sort(function(a,b){return a.dist - b.dist})
+                    by_match.sort(function(a,b){return b.comp - a.comp})
+                    res.send({"err": null, "res": {dist: by_dist, match: by_match}})
+                });
             })
             var fin = [];
-
-            var c = matches.find({
-                $and: [{lat: {$lt: parseFloat(req.query.lat)+1}}, {lat: {$gt: parseFloat(req.query.lat) -1 }}],
-                $and: [{lon: {$lt: parseFloat(req.query.lon)+1}}, {lon: {$gt: parseFloat(req.query.lon) -1 }}]
-            }).toArray(function(err, docs){
-                for(i in docs){
-                    u = docs[i]
-                    console.log(u)
-                    var isIn = inRange([req.query.lat, req.query.lon], [u.lat, u.lon])
-                    console.error("RANGE: ", isIn)
-                    if(isIn < 10){
-                        var tscore = 0;
-                        for(var i = 0; i < u.people.length; i++){
-                            tscore += compUser(u.people[i], me);
-                        }
-                        u.dist = isIn;
-                        u.comp = tscore;
-                        fin.push(u)
-                   }
-                }
-                console.log(fin)
-                var by_dist = fin;
-                var by_match = fin;
-                by_dist.sort(function(a,b){return a.dist - b.dist})
-                by_match.sort(function(a,b){return b.comp - a.comp})
-                res.send({"err": null, "res": {dist: by_dist, match: by_match}})
-            });
         })
     }
 })
