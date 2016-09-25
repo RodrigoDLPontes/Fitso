@@ -32,7 +32,7 @@ public class MatchView {
 			case "crossfit":
 				((ImageView)linearLayout.findViewById(R.id.activityIcon)).setImageResource(R.drawable.ic_crossfit);
 				break;
-			case "football":
+			case "soccer":
 				((ImageView)linearLayout.findViewById(R.id.activityIcon)).setImageResource(R.drawable.ic_soccer);
 				break;
 			case "ultimate":

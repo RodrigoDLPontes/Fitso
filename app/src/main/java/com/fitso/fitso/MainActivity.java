@@ -13,7 +13,9 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -29,6 +31,11 @@ import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.mikepenz.materialdrawer.AccountHeader;
+import com.mikepenz.materialdrawer.AccountHeaderBuilder;
+import com.mikepenz.materialdrawer.DrawerBuilder;
+import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
+import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -51,6 +58,26 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 		setContentView(R.layout.activity_main);
 		topMatchesLinearLayout = (LinearLayout)findViewById(R.id.topMatchesLinearLayout);
 		nearYouLinearLayout = (LinearLayout)findViewById(R.id.nearYouLinearLayout);
+		Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+		setSupportActionBar(myToolbar);
+		myToolbar.inflateMenu(R.menu.main_activity_menu);
+		AccountHeader headerResult = new AccountHeaderBuilder()
+				.withActivity(this)
+				.withHeaderBackground(R.drawable.header)
+				.addProfiles(
+						new ProfileDrawerItem().withName("Level 5").withEmail("FitScore: 1123").withIcon(getResources().getDrawable(R.drawable.ic_testbubble))
+				)
+				.build();
+		new DrawerBuilder()
+				.withActivity(this)
+				.withToolbar(myToolbar)
+				.withAccountHeader(headerResult)
+				.addDrawerItems(
+						new PrimaryDrawerItem().withIdentifier(1).withName("History"),
+						new PrimaryDrawerItem().withIdentifier(2).withName("Shop"),
+						new PrimaryDrawerItem().withIdentifier(3).withName("Settings")
+				)
+				.build();
 		mGoogleApiClient = new GoogleApiClient
 				.Builder(this)
 				.addApi(Places.GEO_DATA_API)
@@ -71,10 +98,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 					location = lm.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
 				}
 			}
-			if(false) {
+			if(location != null) {
 				final double latitude = location.getLatitude();
 				final double longitude = location.getLongitude();
-				new AsyncTask<Void, MatchView, Void>() {
+				new AsyncTask<Void, Object, Void>() {
 					protected Void doInBackground(final Void... voids) {
 						try {
 							String email = getSharedPreferences(Constants.sharedPreferencesFile, MODE_PRIVATE).getString("Email", null);
@@ -85,8 +112,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 							in.close();
 							Log.d("Debug", str);
 							JSONObject json = new JSONObject(str);
-							if(json.getString("err") != null) {
-								JSONArray scoreMatches = json.getJSONArray("comp");
+							if(json.getString("err").equals("null")) {
+								JSONArray scoreMatches = json.getJSONObject("res").getJSONArray("match");
 								int limit = Math.min(5, scoreMatches.length());
 								for(int i = 0; i < limit ; i++) {
 									JSONObject match = scoreMatches.getJSONObject(i);
@@ -98,9 +125,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 									}
 									String sport = match.getString("sport");
 									double distance = match.getDouble("dist");
-									publishProgress(new MatchView(MainActivity.this, null, null, null, null, null, sport, distance, names));
+									publishProgress(true, new MatchView(MainActivity.this, null, null, null, null, null, sport, distance, names));
 								}
-								JSONArray distanceMatches = json.getJSONArray("dist");
+								JSONArray distanceMatches = json.getJSONObject("res").getJSONArray("dist");
 								int limit3 = Math.min(5, distanceMatches.length());
 								for(int i = 0; i < limit3 ; i++) {
 									JSONObject match = distanceMatches.getJSONObject(i);
@@ -112,23 +139,37 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 									}
 									String sport = match.getString("sport");
 									double distance = match.getDouble("dist");
-									publishProgress(new MatchView(MainActivity.this, null, null, null, null, null, sport, distance, names));
+									publishProgress(false, new MatchView(MainActivity.this, null, null, null, null, null, sport, distance, names));
 								}
 							}
 						} catch (Exception e) {}
 						return null;
 					}
 
-					protected void onProgressUpdate(final MatchView... matchViews) {
-						nearYouLinearLayout.addView(matchViews[0].getLinearLayout());
+					protected void onProgressUpdate(final Object... objects) {
+						if((Boolean)objects[0]) {
+							topMatchesLinearLayout.addView(((MatchView)objects[1]).getLinearLayout());
+						} else {
+							nearYouLinearLayout.addView(((MatchView)objects[1]).getLinearLayout());
+						}
 					}
 				}.execute();
 			}
-			for(int i = 0 ; i < 5 ; i++) {
-				String[] names = {"Akarsh", "Rodrigo"};
-				topMatchesLinearLayout.addView(new MatchView(MainActivity.this, null, null, null, null, null, "soccer", 0.4, names).getLinearLayout());
-			}
+//			for(int i = 0 ; i < 5 ; i++) {
+//				String[] names = {"Akarsh", "Rodrigo"};
+//				topMatchesLinearLayout.addView(new MatchView(MainActivity.this, null, null, null, null, null, "soccer", 0.4, names).getLinearLayout());
+//			}
+//			for(int i = 0 ; i < 5 ; i++) {
+//				String[] names = {"Akarsh", "Rodrigo"};
+//				nearYouLinearLayout.addView(new MatchView(MainActivity.this, null, null, null, null, null, "soccer", 0.4, names).getLinearLayout());
+//			}
 		}
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(final Menu menu) {
+		getMenuInflater().inflate(R.menu.main_activity_menu, menu);
+		return true;
 	}
 
 	@Override

@@ -19,12 +19,14 @@ public class SplashScreen extends Activity {
 		if(getSharedPreferences(Constants.sharedPreferencesFile, MODE_PRIVATE).getBoolean("HasBeenUsed", false)) {
 			Intent intent = new Intent(this, MainActivity.class);
 			startActivity(intent);
+			finish();
 		} else {
 			new Handler().postDelayed(new Runnable() {
 				@Override
 				public void run() {
 					Intent intent = new Intent(SplashScreen.this, SignUpSelectionActivity.class);
 					startActivity(intent);
+					finish();
 				}
 			}, 2000);
 		}
