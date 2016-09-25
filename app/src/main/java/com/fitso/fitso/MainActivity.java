@@ -110,7 +110,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 							in = new BufferedReader(new InputStreamReader(url.openStream()));
 							String str = in.readLine();
 							in.close();
-							Log.d("Debug", str);
 							JSONObject json = new JSONObject(str);
 							if(json.getString("err").equals("null")) {
 								JSONArray scoreMatches = json.getJSONObject("res").getJSONArray("match");
