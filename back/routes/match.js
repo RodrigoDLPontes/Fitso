@@ -79,7 +79,7 @@ router.get("/join", function(req, res, next){
                     db.close()
                 } else {
                     console.error("IDMatch")
-                    matches.updateOne({id: req.query.matchid}, {$addToSet: {"people": docs}},
+                    matches.updateOne({id: req.query.matchid}, {$addToSet: {"people": docs[0]}},
                         function(err, result){
                             try {
                                 assert.equal(err, null)
@@ -97,6 +97,33 @@ router.get("/join", function(req, res, next){
         })
     }
 })
+var inRange = function(userLoc, otherLoc){
+  var dist;
+
+  dist = Math.sqrt((69*Math.abs(otherLoc[0] - userLoc[0]))^2 + (54.6*Math.abs(otherLoc[1] - userLoc[1]))^2);
+  return dist
+}
+var compUser = function(usr1, usr2){
+  a1 = usr1.age;
+  s1 = usr1.skill;
+  a2 = usr2.age;
+  s2 = usr2.skill;
+
+  num1 = Math.E^(((Math.abs(a1-a2))^2)/(((2)*((6.5)*s1+a1)^2)));
+  den1 = Math.sqrt(2*(a1+(6.5)*s1)^2*Math.PI);
+  score1 = num1/den1;
+
+  num2 = (Math.E)^(((Math.abs(a1-a2))^2)/((2)*((6.5)*s2+a1)^2));
+  den2 = Math.sqrt(2*(a1+(6.5)*s2)^2*Math.PI);
+  score2 = num2/den2;
+
+  if(score1 <= score2){
+    return (score1/score2)*100;
+  }
+  else{
+    return (score2/score1)*100;
+  }
+}
 
 //the user wants to see all the different matches in the area
 // browse?email=%s&lat=%d&lon=%d&dist=%d with dist not implemented yet.
@@ -106,13 +133,39 @@ router.get("/browse", function(req, res, next){
     } else {
         mgclient.connect(curl, function(err, db){
             var matches = db.collection('matches');
+            var col = db.collection('users');
+            var me ;
+            col.findOne({email: req.query.email}, function(err, docs){
+                me = docs;
+            })
+            var fin = [];
+
             var c = matches.find({
                 $and: [{lat: {$lt: parseFloat(req.query.lat)+1}}, {lat: {$gt: parseFloat(req.query.lat) -1 }}],
                 $and: [{lon: {$lt: parseFloat(req.query.lon)+1}}, {lon: {$gt: parseFloat(req.query.lon) -1 }}]
+            }).toArray(function(err, docs){
+                for(i in docs){
+                    u = docs[i]
+                    console.log(u)
+                    var isIn = inRange([req.query.lat, req.query.lon], [u.lat, u.lon])
+                    console.error("RANGE: ", isIn)
+                    if(isIn < 10){
+                        var tscore = 0;
+                        for(var i = 0; i < u.people.length; i++){
+                            tscore += compUser(u.people[i], me);
+                        }
+                        u.dist = isIn;
+                        u.comp = tscore;
+                        fin.push(u)
+                   }
+                }
+                console.log(fin)
+                var by_dist = fin;
+                var by_match = fin;
+                by_dist.sort(function(a,b){return a.dist - b.dist})
+                by_match.sort(function(a,b){return b.comp - a.comp})
+                res.send({"err": null, "res": {dist: by_dist, match: by_match}})
             });
-            c.each(function(err, item){
-                console.error(item)
-            })
         })
     }
 })
