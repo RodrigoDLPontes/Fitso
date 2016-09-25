@@ -11,8 +11,8 @@
 
         <ImageView
             android:id="@+id/fifthIcon"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:layout_marginLeft="130dp"
             android:src="@drawable/ic_testbubble"/>
 

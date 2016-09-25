@@ -1,5 +1,6 @@
 package com.fitso.fitso;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -22,7 +23,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class SignUpActivity extends AppCompatActivity {
+public class SignUpActivity extends Activity {
 
 	EditText nameEditText;
 	EditText emailEditText;
@@ -74,11 +75,18 @@ public class SignUpActivity extends AppCompatActivity {
 					in.close();
 					JSONObject json = new JSONObject(str);
 //					if(json.getString("err") != null) {
-						getSharedPreferences(Constants.sharedPreferencesFile, MODE_PRIVATE).edit().putString("Email", email);
+						SharedPreferences.Editor editor = getSharedPreferences(Constants.sharedPreferencesFile, MODE_PRIVATE).edit();
+						editor.putBoolean("HasBeenUsed", true);
+						editor.putString("Name", fields[0]);
+						editor.putString("Email", fields[1]);
+						editor.putInt("Age", Integer.parseInt(fields[2]));
+						editor.putString("Gender", fields[3]);
+						editor.apply();
 						Intent intent = new Intent(SignUpActivity.this, ActivitiesSelectionActivity.class);
 						intent.putExtra("Name", name);
 						intent.putExtra("Email", email);
 						startActivity(intent);
+						finish();
 //					} else {
 //						Toast.makeText(SignUpActivity.this, "Fields invalid!", Toast.LENGTH_LONG).show();
 //					}

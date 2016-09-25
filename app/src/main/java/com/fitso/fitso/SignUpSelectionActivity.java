@@ -1,12 +1,13 @@
 package com.fitso.fitso;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 
-public class SignUpSelectionActivity extends AppCompatActivity {
+public class SignUpSelectionActivity extends Activity {
 
 	ImageButton facebookSignUpButton;
 	ImageButton googlePlusSignUpButton;

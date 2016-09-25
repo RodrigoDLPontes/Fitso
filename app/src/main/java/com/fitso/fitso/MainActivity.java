@@ -1,9 +1,16 @@
 package com.fitso.fitso;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,21 +22,26 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.Arrays;
 
-public class MainActivity extends FragmentActivity implements GoogleApiClient.OnConnectionFailedListener {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
 	LinearLayout topMatchesLinearLayout;
+	LinearLayout nearYouLinearLayout;
 
 	private GoogleApiClient mGoogleApiClient;
 
@@ -38,33 +50,123 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.On
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		topMatchesLinearLayout = (LinearLayout)findViewById(R.id.topMatchesLinearLayout);
+		nearYouLinearLayout = (LinearLayout)findViewById(R.id.nearYouLinearLayout);
 		mGoogleApiClient = new GoogleApiClient
 				.Builder(this)
 				.addApi(Places.GEO_DATA_API)
 				.addApi(Places.PLACE_DETECTION_API)
 				.enableAutoManage(this, this)
 				.build();
+		LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+		Location location = null;
+		if(ActivityCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+			ActivityCompat.requestPermissions(this,
+					new String[]{"android.permission.ACCESS_FINE_LOCATION"},
+					1);
+		} else {
+			location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+			if(location == null) {
+				location = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+				if(location == null) {
+					location = lm.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+				}
+			}
+			if(false) {
+				final double latitude = location.getLatitude();
+				final double longitude = location.getLongitude();
+				new AsyncTask<Void, MatchView, Void>() {
+					protected Void doInBackground(final Void... voids) {
+						try {
+							String email = getSharedPreferences(Constants.sharedPreferencesFile, MODE_PRIVATE).getString("Email", null);
+							URL url = new URL("http://128.61.19.249:3000/match/browse?email=" + email + "&lat=" + latitude + "&lon=" + longitude);
+							BufferedReader in = null;
+							in = new BufferedReader(new InputStreamReader(url.openStream()));
+							String str = in.readLine();
+							in.close();
+							Log.d("Debug", str);
+							JSONObject json = new JSONObject(str);
+							if(json.getString("err") != null) {
+								JSONArray scoreMatches = json.getJSONArray("comp");
+								int limit = Math.min(5, scoreMatches.length());
+								for(int i = 0; i < limit ; i++) {
+									JSONObject match = scoreMatches.getJSONObject(i);
+									JSONArray users = match.getJSONArray("people");
+									int limit2 = Math.min(5, users.length());
+									String[] names = new String[limit2];
+									for(int j = 0; j < limit2 ; j++) {
+										names[j] = users.getJSONObject(j).getString("name");
+									}
+									String sport = match.getString("sport");
+									double distance = match.getDouble("dist");
+									publishProgress(new MatchView(MainActivity.this, null, null, null, null, null, sport, distance, names));
+								}
+								JSONArray distanceMatches = json.getJSONArray("dist");
+								int limit3 = Math.min(5, distanceMatches.length());
+								for(int i = 0; i < limit3 ; i++) {
+									JSONObject match = distanceMatches.getJSONObject(i);
+									JSONArray users = match.getJSONArray("people");
+									int limit4 = Math.min(5, users.length());
+									String[] names = new String[limit4];
+									for(int j = 0; j < limit4 ; j++) {
+										names[j] = users.getJSONObject(j).getString("name");
+									}
+									String sport = match.getString("sport");
+									double distance = match.getDouble("dist");
+									publishProgress(new MatchView(MainActivity.this, null, null, null, null, null, sport, distance, names));
+								}
+							}
+						} catch (Exception e) {}
+						return null;
+					}
+
+					protected void onProgressUpdate(final MatchView... matchViews) {
+						nearYouLinearLayout.addView(matchViews[0].getLinearLayout());
+					}
+				}.execute();
+			}
+			for(int i = 0 ; i < 5 ; i++) {
+				String[] names = {"Akarsh", "Rodrigo"};
+				topMatchesLinearLayout.addView(new MatchView(MainActivity.this, null, null, null, null, null, "soccer", 0.4, names).getLinearLayout());
+			}
+		}
 	}
 
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == 1) {
+	protected void onActivityResult(final int requestCode, int resultCode, Intent data) {
+		if (requestCode == 1 || requestCode == 2 || requestCode == 3 || requestCode == 4) {
 			if (resultCode == RESULT_OK) {
 				final Place place = PlacePicker.getPlace(data, this);
-				new AsyncTask<Place, Void, Void>() {
-					protected Void doInBackground(final Place... places) {
+				new AsyncTask<Void, Void, Void>() {
+					protected Void doInBackground(final Void... voids) {
 						try {
 							String email = getSharedPreferences(Constants.sharedPreferencesFile, MODE_PRIVATE).getString("Email", null);
 							if(email == null) return null;
-							URL url = new URL("http://128.61.19.249:3000/match/new?lat=" + place.getLatLng().latitude + "&lon=" + place.getLatLng().longitude);
+							String stringUrl = "http://128.61.19.249:3000/match/new?email=" + email + "&lat=" + place.getLatLng().latitude + "&lon=" + place.getLatLng().longitude;
+							switch(requestCode) {
+								case 1:
+									stringUrl += "&sport=soccer";
+									break;
+								case 2:
+									stringUrl += "&sport=basketball";
+									break;
+								case 3:
+									stringUrl += "&sport=volleyball";
+									break;
+								case 4:
+									stringUrl += "&sport=ultimate";
+									break;
+							}
+							URL url = new URL(stringUrl);
 							BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
 							String str = in.readLine();
 							in.close();
 							JSONObject json = new JSONObject(str);
-						} catch (Exception e) {}
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 						return null;
 					}
-				}.execute(place);
+				}.execute();
 			}
 		}
 	}
@@ -75,7 +177,20 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.On
 	public void createMatchButtonClicked(View view) {
 		try {
 			PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
-			startActivityForResult(builder.build(this), 1);
+			switch(view.getId()) {
+				case R.id.soccerFloatingActionButton:
+					startActivityForResult(builder.build(this), 1);
+					break;
+				case R.id.basketballFoatingActionButton:
+					startActivityForResult(builder.build(this), 2);
+					break;
+				case R.id.volleyballFloatingActionButton:
+					startActivityForResult(builder.build(this), 3);
+					break;
+				case R.id.ultimateFrisbeeFloatingActionButton:
+					startActivityForResult(builder.build(this), 4);
+					break;
+			}
 		} catch(GooglePlayServicesRepairableException e) {
 			e.printStackTrace();
 		} catch(GooglePlayServicesNotAvailableException e) {
