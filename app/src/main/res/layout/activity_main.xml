@@ -1,18 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
     android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context="com.fitso.fitso.MainActivity">
 
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/my_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+
     <ScrollView
+        android:layout_marginTop="60dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1">
@@ -25,28 +34,74 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Top Matches"
                 android:gravity="center"
-                android:textSize="20sp"/>
+                android:text="Top Matches"
+                android:textSize="26sp"/>
 
             <LinearLayout
+                android:id="@+id/topMatchesLinearLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/topMatchesLinearLayout"
+                android:orientation="vertical"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Near you"
+                android:textSize="26sp"/>
+
+            <LinearLayout
+                android:id="@+id/nearYouLinearLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:orientation="vertical"/>
 
         </LinearLayout>
 
     </ScrollView>
 
-    <android.support.design.widget.FloatingActionButton
+    <com.github.clans.fab.FloatingActionMenu
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
         android:layout_gravity="bottom|right"
         android:layout_margin="16dp"
-        android:clickable="true"
-        android:padding="10dp"
-        android:background="@drawable/create_match_background"
-        android:src="@drawable/ic_create_match"/>
+        android:src="@drawable/ic_create_match">
 
-</LinearLayout>
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/soccerFloatingActionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="createMatchButtonClicked"
+            android:src="@drawable/ic_soccer"
+            fab:fab_label="Soccer"/>
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/basketballFoatingActionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="createMatchButtonClicked"
+            android:src="@drawable/ic_basketball"
+            fab:fab_label="Basketball"/>
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/volleyballFloatingActionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="createMatchButtonClicked"
+            android:src="@drawable/ic_volleyball"
+            fab:fab_label="Volleyball"/>
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/ultimateFrisbeeFloatingActionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="createMatchButtonClicked"
+            android:src="@drawable/ic_frisbee"
+            fab:fab_label="Ultimate Frisbee"/>
+
+    </com.github.clans.fab.FloatingActionMenu>
+
+</RelativeLayout>
