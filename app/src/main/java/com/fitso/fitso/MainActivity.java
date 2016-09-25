@@ -214,6 +214,90 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 	}
 
 	@Override
+	public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+		switch (requestCode) {
+			case 1: {
+				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+					LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+					Location location = null;
+					if(ActivityCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+						ActivityCompat.requestPermissions(this,
+								new String[]{"android.permission.ACCESS_FINE_LOCATION"},
+								1);
+					} else {
+						location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+						if(location == null) {
+							location = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+							if(location == null) {
+								location = lm.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+							}
+						}
+						if(location != null) {
+							final double latitude = location.getLatitude();
+							final double longitude = location.getLongitude();
+							new AsyncTask<Void, Object, Void>() {
+								protected Void doInBackground(final Void... voids) {
+									try {
+										String email = getSharedPreferences(Constants.sharedPreferencesFile, MODE_PRIVATE).getString("Email", null);
+										URL url = new URL("http://128.61.19.249:3000/match/browse?email=" + email + "&lat=" + latitude + "&lon=" + longitude);
+										BufferedReader in = null;
+										in = new BufferedReader(new InputStreamReader(url.openStream()));
+										String str = in.readLine();
+										in.close();
+										JSONObject json = new JSONObject(str);
+										if(json.getString("err").equals("null")) {
+											JSONArray scoreMatches = json.getJSONObject("res").getJSONArray("match");
+											int limit = Math.min(5, scoreMatches.length());
+											for(int i = 0 ; i < limit ; i++) {
+												JSONObject match = scoreMatches.getJSONObject(i);
+												JSONArray users = match.getJSONArray("people");
+												int limit2 = Math.min(5, users.length());
+												String[] names = new String[limit2];
+												for(int j = 0 ; j < limit2 ; j++) {
+													names[j] = users.getJSONObject(j).getString("name");
+												}
+												String id = match.getString("id");
+												String sport = match.getString("sport");
+												double distance = match.getDouble("dist");
+												publishProgress(true, new MatchView(MainActivity.this, null, null, null, null, null, sport, distance, names, id));
+											}
+											JSONArray distanceMatches = json.getJSONObject("res").getJSONArray("dist");
+											int limit3 = Math.min(5, distanceMatches.length());
+											for(int i = 0 ; i < limit3 ; i++) {
+												JSONObject match = distanceMatches.getJSONObject(i);
+												JSONArray users = match.getJSONArray("people");
+												int limit4 = Math.min(5, users.length());
+												String[] names = new String[limit4];
+												for(int j = 0 ; j < limit4 ; j++) {
+													names[j] = users.getJSONObject(j).getString("name");
+												}
+												String id = match.getString("id");
+												String sport = match.getString("sport");
+												double distance = match.getDouble("dist");
+												publishProgress(false, new MatchView(MainActivity.this, null, null, null, null, null, sport, distance, names, id));
+											}
+										}
+									} catch(Exception e) {
+									}
+									return null;
+								}
+
+								protected void onProgressUpdate(final Object... objects) {
+									if((Boolean)objects[0]) {
+										topMatchesLinearLayout.addView(((MatchView)objects[1]).getLinearLayout());
+									} else {
+										nearYouLinearLayout.addView(((MatchView)objects[1]).getLinearLayout());
+									}
+								}
+							}.execute();
+						}
+					}
+				}
+			}
+		}
+	}
+
+	@Override
 	public void onConnectionFailed(@NonNull final ConnectionResult connectionResult) {}
 
 	public void createMatchButtonClicked(View view) {

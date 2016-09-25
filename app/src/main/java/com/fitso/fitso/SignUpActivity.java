@@ -74,7 +74,7 @@ public class SignUpActivity extends Activity {
 					String str = in.readLine();
 					in.close();
 					JSONObject json = new JSONObject(str);
-//					if(json.getString("err") != null) {
+//					if(json.getString("err").equals("null")) {
 						SharedPreferences.Editor editor = getSharedPreferences(Constants.sharedPreferencesFile, MODE_PRIVATE).edit();
 						editor.putBoolean("HasBeenUsed", true);
 						editor.putString("Name", fields[0]);

@@ -25,7 +25,7 @@
                 android:background="#FE794C"
                 android:textColor="@android:color/white"
                 android:gravity="center"
-                android:text="(Greetings)"
+                android:text="Hi John!\nWhat so you want to do?"
                 android:textSize="30sp"/>
 
             <LinearLayout
