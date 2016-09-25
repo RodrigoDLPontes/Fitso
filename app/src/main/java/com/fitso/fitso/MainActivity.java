@@ -122,9 +122,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 									for(int j = 0; j < limit2 ; j++) {
 										names[j] = users.getJSONObject(j).getString("name");
 									}
+									String id = match.getString("id");
 									String sport = match.getString("sport");
 									double distance = match.getDouble("dist");
-									publishProgress(true, new MatchView(MainActivity.this, null, null, null, null, null, sport, distance, names));
+									publishProgress(true, new MatchView(MainActivity.this, null, null, null, null, null, sport, distance, names, id));
 								}
 								JSONArray distanceMatches = json.getJSONObject("res").getJSONArray("dist");
 								int limit3 = Math.min(5, distanceMatches.length());
@@ -136,9 +137,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 									for(int j = 0; j < limit4 ; j++) {
 										names[j] = users.getJSONObject(j).getString("name");
 									}
+									String id = match.getString("id");
 									String sport = match.getString("sport");
 									double distance = match.getDouble("dist");
-									publishProgress(false, new MatchView(MainActivity.this, null, null, null, null, null, sport, distance, names));
+									publishProgress(false, new MatchView(MainActivity.this, null, null, null, null, null, sport, distance, names, id));
 								}
 							}
 						} catch (Exception e) {}

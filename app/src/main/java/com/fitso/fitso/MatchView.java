@@ -1,17 +1,27 @@
 package com.fitso.fitso;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
 
 public class MatchView {
 
 	private LinearLayout linearLayout;
 
-	public MatchView(Context context, ImageView firstIcon, ImageView secondIcon, ImageView thirdIcon, ImageView fourthIcon,
-	                 ImageView fithIcon, String sport, double distance, String[] users) {
+	public MatchView(final Context context, ImageView firstIcon, ImageView secondIcon, ImageView thirdIcon, ImageView fourthIcon,
+	                 ImageView fithIcon, String sport, double distance, String[] users, final String id) {
 		LayoutInflater layoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		linearLayout = (LinearLayout)layoutInflater.inflate(R.layout.match_view, null);
 		if(firstIcon != null) ((ImageView)linearLayout.findViewById(R.id.firstIcon)).setImageDrawable(firstIcon.getDrawable());
@@ -66,6 +76,26 @@ public class MatchView {
 		((TextView)linearLayout.findViewById(R.id.matchTitleTextView))
 				.setText(titleBuilder.substring(0, titleBuilder.length() - 2) +
 						(counter != 0 ? " +" + counter : ""));
+		linearLayout.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(final View view) {
+				new AsyncTask<Void, Void, Void>() {
+
+					@Override
+					protected Void doInBackground(final Void... voids) {
+						try {
+							String email = context.getSharedPreferences(Constants.sharedPreferencesFile, Context.MODE_PRIVATE).getString("Email", null);
+							URL url = new URL("http://128.61.19.249:3000/match/join?email=" + email + "&matchid=" + id);
+							BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
+							String str = in.readLine();
+							in.close();
+							JSONObject json = new JSONObject(str);
+						} catch(IOException e) {} catch(JSONException e) {}
+						return null;
+					}
+				}.execute();
+			}
+		});
 	}
 
 	public LinearLayout getLinearLayout() {
